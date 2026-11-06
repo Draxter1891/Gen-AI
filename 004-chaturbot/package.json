@@ -10,7 +10,10 @@
   "author": "",
   "license": "ISC",
   "type": "module",
-  "bin":{
-    "chatur":"cli.js"
+  "bin": {
+    "chatur": "cli.js"
+  },
+  "dependencies": {
+    "readline": "^1.3.0"
   }
 }
