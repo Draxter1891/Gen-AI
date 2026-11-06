@@ -1,4 +1,4 @@
-import { getSettingsFile, saveApiKey } from "./utils/file.utils.js";
+import { getApiKey, getSettingsFile, saveApiKey } from "./utils/file.utils.js";
 import rl from "./utils/readline.js";
 
 const main = async () => {
@@ -10,7 +10,8 @@ const main = async () => {
     await saveApiKey(apiKey);
   }
 
-  
+  const {apiKey} = await getApiKey();
+  console.log(apiKey);
 };
 
 export default main;
