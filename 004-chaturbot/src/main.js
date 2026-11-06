@@ -10,8 +10,17 @@ const main = async () => {
     await saveApiKey(apiKey);
   }
 
-  const {apiKey} = await getApiKey();
-  console.log(apiKey);
+  const response = await getApiKey();
+
+  if (response.error) {
+    console.log(response.error);
+    const apiKey = await rl.question("Enter your api key: ");
+
+    await saveApiKey(apiKey);
+    return main();
+  }
+
+  console.log(response.apiKey);
 };
 
 export default main;
