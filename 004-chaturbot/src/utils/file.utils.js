@@ -1,5 +1,5 @@
 import path from "path";
-import { HOME_DIR, CONFIG_DIR } from "./constants.js";
+import { CONFIG_DIR } from "./constants.js";
 import fs from "fs/promises";
 import axios from "axios";
 
