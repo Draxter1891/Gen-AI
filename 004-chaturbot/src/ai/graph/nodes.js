@@ -54,14 +54,14 @@ export async function ToolNode(state) {
    * }]
    */
 
-  console.log(toolCalls)
+  // console.log(toolCalls)
 
   const toolResults = [];
   for (const toolCall of toolCalls) {
     switch (toolCall.name) {
       case "UpsertFiles":
         process.stdout.write(
-          `[Tool]: Creating/Updating files ${JSON.stringify(toolCall.args.files.map(f => f.path).join(", "))}\n}`,
+          `[Tool]: Creating/Updating files ${JSON.stringify(toolCall.args.files.map(f => f.path).join(", "))}\n`,
         );
         const userInput = await rl.question(
           "Do want to proceed further? (yes/no)",
@@ -80,14 +80,14 @@ export async function ToolNode(state) {
         break;
       case "ReadFiles":
         process.stdout.write(
-          `[Tool]: Reading files ${JSON.stringify(toolCall.args.files.map(f => f.path).join(", "))}\n}`,
+          `[Tool]: Reading files ${JSON.stringify(toolCall.args.files.map(f => f.path).join(", "))}\n`,
         );
         const readResult = await fileTools.ReadFiles.invoke(toolCall);
         toolResults.push(readResult);
         break;
       case "ListFiles":
         process.stdout.write(
-          `[Tool]: Listing files ${JSON.stringify(toolCall)}`,
+          `[Tool]: Listing files\n`,
         );
         const listResult = await fileTools.ListFiles.invoke(toolCall);
         toolResults.push(listResult);
