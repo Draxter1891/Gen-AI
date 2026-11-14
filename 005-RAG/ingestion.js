@@ -3,7 +3,7 @@ import { PDFParse } from "pdf-parse";
 import fs from "fs/promises";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import {CohereEmbeddings} from "@langchain/cohere"
-
+import { Pinecone } from '@pinecone-database/pinecone';
 
 const parser = new PDFParse({
   data: await fs.readFile("./story.pdf"),
@@ -29,6 +29,23 @@ const embeddings = new CohereEmbeddings({
 })
 
 
-const vector = await embeddings.embedDocuments(chunks);
+const vectors = await embeddings.embedDocuments(chunks);
 
-console.log(vector)
+
+
+//Initializing PINECONE client
+const pc = new Pinecone({apiKey: process.env.PINECONE_API_KEY});
+
+
+const index = pc.Index({
+    name: "cohort-3-rag",
+})
+
+//Vectors storing to Vector DB
+await index.documents.upsert({
+  documents: vectors.map((embedding, index) => ({
+    _id: `chunk-${index}`,
+    embedding,
+    content: chunks[index],
+  })),
+});
