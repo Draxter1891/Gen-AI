@@ -14,13 +14,17 @@ const parser = new PDFParse({
 const text = (await parser.getText({pageJoiner:""})).text;
 
 
+
+
+//Split the text into chunks
 const textsplitter = new RecursiveCharacterTextSplitter({
     chunkSize: 500,
     chunkOverlap: 100
 })
 
-//Split the text into chunks
 const chunks = await textsplitter.splitText(text);
+
+
 
 // Initializing embeddings (using embedding model)
 const embeddings = new CohereEmbeddings({
