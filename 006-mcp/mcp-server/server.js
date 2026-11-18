@@ -12,7 +12,7 @@ server.registerTool(
   {
     description: "Create a new calendar event",
     inputSchema: z.object({
-      title: z.string().description("Title of the event"),
+      title: z.string().describe("Title of the event"),
       start: z.string().describe("Start time of the event"),
       end: z.string().describe("End time of the event"),
     }),
