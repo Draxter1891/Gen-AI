@@ -7,9 +7,13 @@ const adapter = new MCPAdapter({
       command: "node",
       args: ["../mcp-server/server.js"],
     },
+    // Remote server: Streamable HTTP is the default for a url
+    docs: {
+      url: "https://docs.langchain.com/mcp",
+    },
   },
 });
 
 const tools = await adapter.listTools();
 
-console.log(tools)
+console.log(tools);
