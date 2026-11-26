@@ -4,9 +4,22 @@ import { generateTitle } from '../services/ai/ai-tittle.service.js';
 import { createConversation, findConversationByIdAndUser, findConversationsByUser } from '../DAO/conversation.dao.js';
 import { findMessagesByConversation, createMessage } from '../DAO/message.dao.js';
 import model from "../services/ai/main.service.js";
-import { HumanMessage, AIMessage } from 'langchain';
+import { HumanMessage, AIMessage, SystemMessage } from 'langchain';
+import { MCPAdapter } from "@langchain/mcp-adapters";
+import { createAgent, AIMessageChunk } from "langchain";
+import { env } from "../config/env.js";
+import { getUserContext, setUserContext } from "../services/ai/memory.tool.js"
 
 
+const adapter = new MCPAdapter({
+    servers: {
+        tavily: {
+            url: env.TAVILY_URL
+        }
+    }
+});
+
+const tools = await adapter.listTools();
 
 
 /**
@@ -54,7 +67,27 @@ export async function handleMessage(req, res, next) {
         conversation: conversation._id
     })
 
-    const stream = await model.stream(messages);
+    const agent = createAgent({
+        model,
+        tools: [ setUserContext, getUserContext, ...tools ],
+    })
+
+
+    const stream = await agent.stream(
+        {
+            messages: [
+                new SystemMessage(`
+            - Your name is downbot.
+            - Current President of USA is Trump.
+            `),
+                ...messages
+            ]
+        }, {
+        streamMode: "messages",
+        configurable: {
+            userId: user.id
+        }
+    });
 
 
     // ––––––––––––––––––––– set headers for SSE ––––––––––––––––––––––
@@ -69,14 +102,19 @@ export async function handleMessage(req, res, next) {
     })}\n\n`);
 
     let aiChunk = null;
-    for await (const chunk of stream) {
-        if (aiChunk == null) {
-            aiChunk = chunk;
-        } else {
-            aiChunk = aiChunk.concat(chunk);
+    for await (const [ chunk ] of stream) {
+
+        console.log(chunk);
+
+        if (chunk instanceof AIMessageChunk) {
+            if (aiChunk == null) {
+                aiChunk = chunk;
+            } else {
+                aiChunk = aiChunk.concat(chunk);
+            }
+            res.write(`data: ${JSON.stringify({ chunk: chunk.content })}\n\n`);
         }
 
-        res.write(`data: ${JSON.stringify({ chunk: chunk.content })}\n\n`);
     }
 
     // ––––––––––––––––––––– end of SSE –––––––––––––––––––––
@@ -119,7 +157,8 @@ export async function getMessagesByConversation(req, res, next) {
         return next(new AppError(404, 'Conversation not found'));
     }
 
-    const messages = await findMessagesByConversation(conversation.id);
+    const messages = (await findMessagesByConversation(conversation.id))
+    // .filter(message => message.role !== "tool")
 
     return sendSuccess(res, 200, 'Messages fetched successfully', { messages });
 }
